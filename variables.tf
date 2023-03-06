@@ -1,8 +1,5 @@
-resource "aws_subnet" "public_subnet" {
-  vpc_id     = aws_vpc.public_subnet.id
-  cidr_block = "10.0.1.0/24"
-
-  tags = {
-    Name = "public_subnet"
-  }
+variable "pub_sub_cidr" {
+  description = "public subnet cidr"
+  type        = list(string)
+  default     = ["10.0.4.0/24", "10.0.5.0/24"]
 }
