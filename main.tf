@@ -1,14 +1,12 @@
 #  VPC data
 
-resource "aws_vpc" "21vpc" {
+resource "aws_vpc" "vpc21" {
   cidr_block = "10.0.0.0/16"
 
-
   tags = {
-    Name = "21vpc"
+    Name = "vpc21"
   }
 }
-
 
 # Availabiltiy Zone configuration
 
@@ -19,22 +17,21 @@ data "aws_availability_zones" "available" {
 #  Subnet configuration
 
 resource "aws_subnet" "public_subnet" {
-  vpc_id                  = aws_vpc.21vpc.id
+  vpc_id                  = aws_vpc.vpc21.id
   cidr_block              = var.pub_sub_cidr[count.index]
   count                   = 2
   map_public_ip_on_launch = true
   availability_zone       = data.aws_availability_zones.available.names[count.index]
 }
 
-
 #  Security Group Configuration
 
 resource "aws_security_group" "wk21_security_group" {
   name        = "wk21-security-group"
   description = "Week21 Security Group"
-  vpc_id      = aws_vpc.21vpc.id
-  
-    ingress {
+  vpc_id      = aws_vpc.vpc21.id
+
+  ingress {
     description = "HTTPS from web"
     from_port   = 443
     to_port     = 443
@@ -53,22 +50,20 @@ resource "aws_security_group" "wk21_security_group" {
   }
 }
 
-
 # Internet Gateway Configuration 
 
 resource "aws_internet_gateway" "internet_gateway" {
-  vpc_id = aws_vpc.21vpc.id
+  vpc_id = aws_vpc.vpc21.id
 
   tags = {
     Name = "Week21_internet_gateway"
   }
 }
 
-
 # public route table configuration
 
 resource "aws_route_table" "public_rt_week21" {
-  vpc_id = aws_vpc.21vpc.id
+  vpc_id = aws_vpc.vpc21.id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -76,16 +71,13 @@ resource "aws_route_table" "public_rt_week21" {
   }
 }
 
-
-
-
 #  EC2 Instance and Apache install configuration
 
 resource "aws_launch_configuration" "week21_apache_config" {
   name_prefix     = "week21-config"
   image_id        = "ami-0d925fac3dbba7ca2"
   instance_type   = "t2.micro"
-  user_data       = file("baashdata.sh")
+  user_data       = file("bashdata.sh")
   security_groups = [aws_security_group.wk21_security_group.id]
 
 }
@@ -105,7 +97,7 @@ resource "aws_autoscaling_group" "Week21_asg" {
     value               = "ec2 week21 instance"
     propagate_at_launch = true
   }
-  
+
   lifecycle {
     create_before_destroy = true
   }
